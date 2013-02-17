@@ -1,4 +1,5 @@
-spotify-tech-puzzle
+Spotify Tech Puzzle
 ===================
 
-trying to solve spotify tech puzzles
+Working on solving the tech puzzles by Spotify.
+https://www.spotify.com/us/jobs/tech/
