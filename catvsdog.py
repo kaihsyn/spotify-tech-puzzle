@@ -8,16 +8,6 @@ class Problem():
 		self.votes = []
 		self.vote_stat = {}
 
-	def vote_pop(self):
-		vote = self.votes.pop(0)
-		self.vote_remove(vote)
-		return vote
-
-	def vote_remove(self, vote):
-		self.votes.remove(vote)
-		self.vote_stat[vote[0]]['like'] -= 1
-		self.vote_stat[vote[1]]['hate'] -= 1
-
 	def vote_add(self, vote):
 		self.votes.append(vote)
 		
@@ -30,6 +20,19 @@ class Problem():
 			self.vote_stat[vote[1]]['hate'] += 1
 		else:
 			self.vote_stat[vote[1]] = { 'like': 0, 'hate': 1 }
+
+	def vote_remove(self, vote):
+		self.votes.remove(vote)
+		self.vote_stat_remove(vote)
+
+	def vote_remove_list(self, vote_list):
+		self.votes = [vote for vote in self.votes if vote not in vote_list]
+		for vote in vote_list:
+			self.vote_stat_remove(vote)
+
+	def vote_stat_remove(self, vote):
+		self.vote_stat[vote[0]]['like'] -= 1
+		self.vote_stat[vote[1]]['hate'] -= 1
 
 class Result():
 	def __init__(self):
@@ -57,12 +60,11 @@ def backtrack(res, prob):
 		prob.vote_remove(sel_vote)
 
 		# remove confilct
-		del_votes = []
+		del_votes = [vote for vote in prob.votes if vote[0] == sel_vote[1] or vote[1] == sel_vote[0]]
+		prob.vote_remove_list(del_votes)
+
 		for vote in prob.votes:
-			if vote[0] == sel_vote[1] or vote[1] == sel_vote[0]:
-				prob.vote_remove(vote)
-				del_votes.append(vote)
-			elif vote in votes:
+			if vote in votes:
 				votes.remove(vote)
 
 		res.now += 1
