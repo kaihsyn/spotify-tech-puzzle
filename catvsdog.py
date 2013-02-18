@@ -1,5 +1,3 @@
-import time
-
 class Problem():
 	def __init__(self):
 		self.num_cat = 0
@@ -87,11 +85,5 @@ for i in xrange(rounds):
 	for j in xrange(prob.num_votes):
 		prob.vote_add(tuple([int(v[1:]) if v[:1] == 'C' else int(v[1:])+prob.num_cat for v in raw_input().split(' ')]))
 
-	print 'Computing...'
-
-	time1 = time.time()
 	backtrack(res, prob)
-	time2 = time.time()
-
 	print res.max
-	print time2 - time1
