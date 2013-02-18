@@ -6,6 +6,30 @@ class Problem():
 		self.num_dog = 0
 		self.num_vote = 0
 		self.votes = []
+		self.vote_stat = {}
+
+	def vote_pop(self):
+		vote = self.votes.pop(0)
+		self.vote_remove(vote)
+		return vote
+
+	def vote_remove(self, vote):
+		self.votes.remove(vote)
+		self.vote_stat[vote[0]]['like'] -= 1
+		self.vote_stat[vote[1]]['hate'] -= 1
+
+	def vote_add(self, vote):
+		self.votes.append(vote)
+		
+		if vote[0] in self.vote_stat:
+			self.vote_stat[vote[0]]['like'] += 1
+		else:
+			self.vote_stat[vote[0]] = { 'like': 1, 'hate': 0 }
+
+		if vote[1] in self.vote_stat:
+			self.vote_stat[vote[1]]['hate'] += 1
+		else:
+			self.vote_stat[vote[1]] = { 'like': 0, 'hate': 1 }
 
 class Result():
 	def __init__(self):
@@ -14,41 +38,29 @@ class Result():
 
 def backtrack(res, prob):
 
+	if res.now + len(prob.votes) <= res.max:
+		return
+
 	if len(prob.votes) == 0:
 		if res.now > res.max:
 			res.max = res.now
 		return
-	"""
-	# select one vote
-	sel_vote = prob.votes.pop(0)
 
-	# remove conflict votes
-	left_votes = []
-	for vote in prob.votes:
-		if vote[0] == sel_vote[1] or vote[1] == sel_vote[0]:
-			prob.vote.remove(vote)
-			left_votes.append(vote)
-
-	res.now += 1
-	backtrack(res, prob)
-	res.now -= 1
-
-	# put them back
-	prob.votes.append(sel_vote)
-	prob.votes += left_votes
-	"""
 	votes = list(prob.votes)
 
 	while len(votes) > 0:
+		# sort votes
+		votes = sorted(votes, key=lambda v: prob.vote_stat[v[1]]['like'] + prob.vote_stat[v[0]]['hate'])
+
 		# select one vote
 		sel_vote = votes.pop(0)
-		prob.votes.remove(sel_vote)
+		prob.vote_remove(sel_vote)
 
 		# remove confilct
 		del_votes = []
 		for vote in prob.votes:
 			if vote[0] == sel_vote[1] or vote[1] == sel_vote[0]:
-				prob.votes.remove(vote)
+				prob.vote_remove(vote)
 				del_votes.append(vote)
 			elif vote in votes:
 				votes.remove(vote)
@@ -57,8 +69,9 @@ def backtrack(res, prob):
 		backtrack(res, prob)
 		res.now -= 1
 
-		prob.votes.append(sel_vote)
-		prob.votes += del_votes
+		prob.vote_add(sel_vote)
+		for vote in del_votes:
+			prob.vote_add(vote)
 
 	return
 
@@ -70,9 +83,9 @@ for i in xrange(rounds):
 	prob.num_cat, prob.num_dogs, prob.num_votes = [int(j) for j in raw_input().split(' ')]
 
 	for j in xrange(prob.num_votes):
-		prob.votes.append(tuple([int(v[1:]) if v[:1] == 'C' else int(v[1:])+prob.num_cat for v in raw_input().split(' ')]))
+		prob.vote_add(tuple([int(v[1:]) if v[:1] == 'C' else int(v[1:])+prob.num_cat for v in raw_input().split(' ')]))
 
-	prob.votes = sorted(prob.votes)
+	print 'Computing...'
 
 	time1 = time.time()
 	backtrack(res, prob)
